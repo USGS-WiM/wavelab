@@ -1,0 +1,92 @@
+/* You can add global styles to this file, and also import other style files */
+
+html, body { height: 100%; }
+body { 
+    margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; 
+    padding: 10px;
+    margin-left: 20px;
+}
+
+table td, table th {
+    padding: 1rem;
+    vertical-align: top;
+    border-top: 1px solid #e9ecef;
+}
+
+table {
+    background-color: rgba(0,0,0,.015);
+    border-radius: 0;
+    box-shadow: none;
+    border: 1px solid #eceef4;
+    font-weight: 400;
+    letter-spacing: 1px;
+    font-size: 11pt;
+    line-height: 1.6em;
+    min-height: 20px;
+    padding: 19px;
+    margin-bottom: 20px;
+    margin-top: 2px;
+}
+
+button {
+    color: #fff;
+    background-color: #0062cc;
+    border-color: #005cbf;
+    margin: 0px 0px 20px 20px;
+    padding: 5px 10px;
+}
+
+button:hover {
+    outline: 0;
+    background-color: #005cbf;
+    cursor: pointer;
+}
+
+input, mat-select {
+    background-color: transparent;
+    box-shadow: none;
+    box-sizing: inherit;
+    width: 100%;
+    background-color: #FFF;
+    color: #10152C;
+    font-size: 100%;
+    font-weight: 300;
+    box-sizing: border-box;
+    padding: 9px 10px;
+    border-radius: 3px;
+    font-family: 'Open Sans',Helvetica,sans-serif;
+    font-size: 14px;
+    letter-spacing: .4px;
+    border: 2px solid #e0e3e6;
+    transition: .1s;
+    font-weight: 400;
+    color: #10152C;
+}
+
+button:disabled {
+    background-color: #e0e3e6;
+    border-color: rgba(0,0,0,.015);
+    cursor: not-allowed;
+    text-decoration: underline;
+}
+
+i {
+    left: 0 !important;
+    margin-left: 5px;
+    margin-top: 12px !important;
+}
+
+.red {
+    color: red;
+}
+
+.green {
+    color: green;
+}
+
+.procSelect {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
