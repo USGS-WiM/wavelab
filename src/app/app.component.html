@@ -1,30 +1,31 @@
 <h1>WaveLab</h1>
 <h3>Choose your procedure:</h3>
-<mat-form-field >
-  <mat-select class="procSelect" placeholder="Select" [(value)]="selectedProcedure" (selectionChange)="getConfig($event.value)">
-    <mat-option *ngFor="let proc of procedures" [value]="proc.code">{{proc.code}}</mat-option>
-  </mat-select>
-</mat-form-field>
+<mat-select class="procSelect" placeholder="Select" [(value)]="selectedProcedure" (selectionChange)="getConfig($event.value)">
+  <mat-option *ngFor="let proc of procedures" [value]="proc.code">{{proc.code}}</mat-option>
+</mat-select>
 <div *ngIf="config" id="config">
   <label *ngIf="config">{{config.description}}</label>
   <div class="fileInputs">
       <h4>Input files</h4>
       <div>
-        <input style="width:inherit" #fileUpload type="file" multiple (change)="upload(fileUpload.files)" />
-        <table class="filesTable" *ngIf="uploadedFiles.length && selectedProcedure == 'Wave'">
+        <input style="width:inherit" #fileUpload type="file" [multiple]="acceptMultiple" (change)="upload(fileUpload.files)" />
+        <table class="filesTable" *ngIf="uploadedFiles.length > 0">
           <thead>
             <tr>
               <th>File Name</th>
               <th>Document Type</th>
+              <th>Remove</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let file of uploadedFiles">
               <td>{{file.name}}</td>
               <td>{{file.name.split('.').pop() == 'nc' ? 'netCDF': 'CSV'}}</td>
+              <td (click)="removeFile(file.name)"><i class="fa fa-trash"></i></td>
             </tr>
           </tbody>
         </table>
+        <div class="red" id="fileTypeError">{{fileError}}</div>
       </div>
   </div>
   <div>
@@ -46,28 +47,23 @@
             <td>{{item.valueType}}</td>
             <td>{{item.required}}</td>
             <td>{{item.description}}</td>
-            <td style="padding: 8px .75rem 8px 8px !important; display:flex;"*ngIf="['option','bool'].indexOf(item.valueType) == -1 && item.name !== 'Input File Name'">
-              <input style="width:inherit" [(ngModel)]="item.value" [required]="item.required" (change)="inputChanged(item.name, item.value)"
-                validate style="flex-grow:3;">
-              <i [ngClass]="item.value || !item.required ? 'fa fa-check green': 'fa fa-warning red'" style="left: 0 !important; margin-left: 5px; top: 12px !important;"></i>
-            </td>
-            <td style="padding: 8px .75rem 8px 8px !important; display:flex;"*ngIf="item.valueType == 'option'">
-              <mat-select placeholder="Select" [required]="item.required" (selectionChange)="inputChanged(item.name, $event.value)">
-                <mat-option *ngFor="let option of item.options" [value]="option">{{option}}</mat-option>
-              </mat-select>
-              <i [ngClass]="item.value || !item.required ? 'fa fa-check green': 'fa fa-warning red'" style="left: 0 !important; margin-left: 5px; top: 12px !important;"></i>
-            </td>
-            <td *ngIf="item.valueType == 'bool'" style="padding: 8px .75rem 8px 8px !important; display:flex;">
-              <mat-select [(value)]="item.value" placeholder="Select" [required]="item.required" (selectionChange)="inputChanged(item.name, $event.value)">
+            <td style="padding: 8px .75rem 8px 8px !important; display:flex;">
+              <input *ngIf="['option','bool'].indexOf(item.valueType) == -1 && item.name !== 'Input File Name'" [(ngModel)]="item.value" [required]="item.required" (change)="inputChanged(item.name, item.value)" 
+                validate [placeholder]="(item.valueType === 'date') ? 'Ex. ' + currentDate: (item.valueType === 'coordinates array') ? 'Ex. 43.9,-72.1': ''">
+              <mat-select *ngIf="item.valueType == 'bool'" [(value)]="item.value" placeholder="Select" [required]="item.required" (selectionChange)="inputChanged(item.name, $event.value)">
                 <mat-option [value]="false">false</mat-option>
                 <mat-option [value]="true">true</mat-option>
               </mat-select>
-              <i [ngClass]="item.value !== null || !item.required ? 'fa fa-check green': 'fa fa-warning red'" style="left: 0 !important; margin-left: 5px; top: 12px !important;"></i>
+              <mat-select *ngIf="item.valueType == 'option'" placeholder="Select" [required]="item.required" (selectionChange)="inputChanged(item.name, $event.value)">
+                <mat-option *ngFor="let option of item.options" [value]="option">{{option}}</mat-option>
+              </mat-select>
+              <i *ngIf="item.valueType !== 'bool'" [ngClass]="item.value || !item.required ? 'fa fa-check green': 'fa fa-warning red'"></i>
+              <i *ngIf="item.valueType === 'bool'" [ngClass]="item.value !== null || !item.required ? 'fa fa-check green': 'fa fa-warning red'"></i>
             </td>
           </ng-container>
         </tr>
       </tbody>
     </table>
   </div>
-  <button [disabled]="disableSubmit" (click)="runProc()">Run Procedure</button>
+  <button [disabled]="disableSubmit" (click)="runProc()"><i class="fa fa-refresh" [ngClass]="{'fa-spin': showWaitCursor}" id="refreshIcon"></i>&nbsp;&nbsp;Run Procedure</button>
 </div>

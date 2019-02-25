@@ -4,7 +4,6 @@ html, body { height: 100%; }
 body { 
     margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; 
     padding: 10px;
-    margin-left: 20px;
 }
 
 table td, table th {
@@ -21,7 +20,6 @@ table {
     font-weight: 400;
     letter-spacing: 1px;
     font-size: 11pt;
-    line-height: 1.6em;
     min-height: 20px;
     padding: 19px;
     margin-bottom: 20px;
@@ -43,24 +41,12 @@ button:hover {
 }
 
 input, mat-select {
-    background-color: transparent;
-    box-shadow: none;
-    box-sizing: inherit;
-    width: 100%;
-    background-color: #FFF;
-    color: #10152C;
-    font-size: 100%;
-    font-weight: 300;
     box-sizing: border-box;
     padding: 9px 10px;
-    border-radius: 3px;
-    font-family: 'Open Sans',Helvetica,sans-serif;
     font-size: 14px;
     letter-spacing: .4px;
     border: 2px solid #e0e3e6;
-    transition: .1s;
     font-weight: 400;
-    color: #10152C;
 }
 
 button:disabled {
@@ -85,8 +71,12 @@ i {
 }
 
 .procSelect {
-    width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+#refreshIcon {
+    margin-top: 0px !important;
 }
 
