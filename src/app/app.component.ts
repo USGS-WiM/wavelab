@@ -79,30 +79,36 @@ export class AppComponent implements OnInit {
   }
 
   public upload(files) {
-    if (this.selectedProcedure === 'Wave') {
-      for (const file of files) { this.uploadedFiles.push(file); }
-      if (files.length < 3) {
-        for (let i = 0; i < files.length; i ++) {
-          this.config.configuration[i].value = files[i].name;
-          this.fileTypes.push(files[i].name.split('.').pop());
+    if (files.length > 0) {
+      if (this.selectedProcedure === 'Wave') {
+        for (const file of files) { this.uploadedFiles.push(file); }
+        if (files.length < 3) {
+          for (let i = 0; i < files.length; i ++) {
+            this.config.configuration[i].value = files[i].name;
+            this.fileTypes.push(files[i].name.split('.').pop());
+          }
         }
+      } else {
+        this.fileTypes = [];
+        this.uploadedFiles = [files[0]];
+        this.config.configuration[0].value = files[0].name;
+        this.fileTypes.push(files[0].name.split('.').pop());
       }
-    } else {
-      this.uploadedFiles = files;
-      this.config.configuration[0].value = files[0].name;
-      this.fileTypes.push(files[0].name.split('.').pop());
+      this.checkInputs();
     }
-    this.checkInputs();
   }
 
   public removeFile(fileName) {
     const index = this.uploadedFiles.findIndex(function (file) { return file.name === fileName; });
     this.uploadedFiles.splice(index, 1);
+    this.fileTypes = [];
     if (this.selectedProcedure === 'Wave') {
       for (let i = 0; i < this.uploadedFiles.length; i ++) {
         this.config.configuration[i].value = this.uploadedFiles[i].name;
         this.fileTypes.push(this.uploadedFiles[i].name.split('.').pop());
       }
+    } else {
+      this.uploadedFiles = [];
     }
     this.checkInputs();
   }
@@ -155,7 +161,7 @@ export class AppComponent implements OnInit {
   }
 
   public downLoadFile(data: any) {
-    gtag('event', {'event_category': 'procedures', 'event_label': 'file download'});
+    gtag('event', 'download', {'event_category': 'procedures', 'event_label': 'file download'});
     saveAs(data._body, this.outputName);
   }
 

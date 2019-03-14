@@ -49,6 +49,14 @@ input, mat-select {
     font-weight: 400;
 }
 
+.fileButton {
+    background-color: rgba(0,0,0,.015);
+}
+
+.fileButton:hover {
+    cursor: pointer;
+}
+
 button:disabled {
     background-color: #e0e3e6;
     border-color: rgba(0,0,0,.015);

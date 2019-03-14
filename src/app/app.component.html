@@ -8,7 +8,8 @@
   <div class="fileInputs">
       <h4>Input files</h4>
       <div>
-        <input style="width:inherit" #fileUpload type="file" [multiple]="acceptMultiple" (change)="upload(fileUpload.files)" />
+        <input #fileUpload type="file" [multiple]="acceptMultiple" (change)="upload(fileUpload.files)" style="display: none;"/>
+        <input style="width:inherit" type="button" class="fileButton" value="Select file(s)" (click)="fileUpload.click();">
         <table class="filesTable" *ngIf="uploadedFiles.length > 0">
           <thead>
             <tr>
@@ -20,7 +21,7 @@
           <tbody>
             <tr *ngFor="let file of uploadedFiles">
               <td>{{file.name}}</td>
-              <td>{{file.name.split('.').pop() == 'nc' ? 'netCDF': 'CSV'}}</td>
+              <td>{{file.name.split('.').pop() == 'nc' ? 'netCDF': file.name.split('.').pop().toUpperCase()}}</td>
               <td (click)="removeFile(file.name)"><i class="fa fa-trash"></i></td>
             </tr>
           </tbody>
