@@ -1,9 +1,11 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, Form, FormControl } from '@angular/forms';
-import { Http, Response, RequestOptions, URLSearchParams, Headers, ResponseContentType } from '@angular/http';
+import { Http, Response, RequestOptions, URLSearchParams, Headers, ResponseContentType, ResponseType } from '@angular/http';
 import { FileUploader } from 'ng2-file-upload';
 import 'rxjs';
 import { saveAs } from 'file-saver';
+import * as Highcharts from 'highcharts';
+import { ToasterService, ToasterConfig } from 'angular2-toaster/angular2-toaster';
 
 declare let gtag: Function;
 
@@ -25,65 +27,182 @@ export class AppComponent implements OnInit {
   public config;
   public disableSubmit = true;
   public currentDate = new Date().toLocaleDateString();
+  public chart: any;
+  public _chartOptions: any;
+  public showChart = false;
+  public response;
+
+  public toastConfig: ToasterConfig = new ToasterConfig({
+      showCloseButton: true,
+      tapToDismiss: false,
+      timeout: 0
+  });
 
   @ViewChild('fileUpload') fileUpload: ElementRef;
+  @ViewChild('scrollBottom') private scrollBottom: ElementRef;
 
   public uploader: FileUploader = new FileUploader({
     isHTML5: true
   });
 
-  constructor(private fb: FormBuilder, private http: Http) { }
-
+  constructor(private fb: FormBuilder, private http: Http, private _toasterService: ToasterService) {}
 
   ngOnInit() {
     this.showWaitCursor = false;
     this.fileError = '';
-    const JSON_HEADERS = new Headers({ 'Accept': 'application/json' });
+    const JSON_HEADERS = new Headers({ Accept: 'application/json' });
     const options = new RequestOptions({ headers: JSON_HEADERS });
-    this.http.get(this.proceduresURL, options)
-      .subscribe(p => {
+    this.http.get(this.proceduresURL, options).subscribe(
+      // get available procedures for select
+      p => {
         this.procedures = p;
         this.procedures = JSON.parse(this.procedures._body);
-      }, (error) => {
+      },
+      error => {
         this.errorHandler(error);
-      });
+      }
+    );
+
+    this._chartOptions = {
+      credits: {
+        enabled: false
+      },
+      chart: {
+        type: 'scatter',
+        zoomType: 'xy',
+      },
+      xAxis: {
+        title: {
+          text: 'Time'
+        },
+        startOnTick: true,
+        endOnTick: true,
+        showLastLabel: true,
+        labels: {
+          formatter: function() {
+            const date = new Date(this.value);
+            return date.getMonth() + '-' + date.getDate() + '-' + date.getFullYear();
+          }
+        },
+        type: 'datetime'
+      },
+      yAxis: {
+        title: {
+          text: 'Pressure'
+        }
+      },
+      legend: {
+        enabled: false
+      },
+      plotOptions: {
+        scatter: {
+          marker: {
+            radius: 5,
+            states: {
+              hover: {
+                enabled: true,
+                lineColor: 'rgb(100,100,100)'
+              }
+            }
+          },
+          tooltip: {
+            headerFormat: '<b>{point.x:%Y-%m-%d}<b><br>',
+            pointFormat: '{point.y}',
+            shared: true
+          }
+        },
+        series: {
+            turboThreshold: 5000
+        }
+      },
+      responsive: {
+        rules: [
+          {
+            condition: {
+              maxWidth: 500
+            },
+            chartOptions: {
+              legend: {},
+              yAxis: {
+                labels: {},
+                title: {
+                  text: null
+                }
+              },
+              subtitle: {
+                text: null
+              },
+              credits: {
+                enabled: false
+              }
+            }
+          }
+        ]
+      }
+    };
+    this.chart = new Highcharts.Chart('chart', this._chartOptions);
+    this.chart.setTitle({ text: 'Data Preview'});
   }
 
   public getConfig(procedure) {
-    if (this.selectedProcedure === 'Wave') { this.acceptMultiple = true;
-    } else {this.acceptMultiple = false; }
-    if (this.fileUpload) { this.fileUpload.nativeElement.value = ''; }
-    this.fileError = ''; this.fileTypes = []; this.uploadedFiles = [];
+    // get the configuration/list of inputs needed for the procedure
+    this.showChart = false;
+    if (this.selectedProcedure === 'Wave') {
+      this.acceptMultiple = true;
+    } else {
+      this.acceptMultiple = false;
+    }
+    if (this.fileUpload) {
+      this.fileUpload.nativeElement.value = '';
+    }
+    this.fileError = '';
+    this.fileTypes = [];
+    this.uploadedFiles = [];
 
-    const JSON_HEADERS = new Headers({ 'Accept': 'application/json' });
+    const JSON_HEADERS = new Headers({ Accept: 'application/json' });
     const options = new RequestOptions({ headers: JSON_HEADERS });
-    this.http.get(this.proceduresURL + '/' + procedure, options)
-      .subscribe(p => {
+    this.http.get(this.proceduresURL + '/' + procedure, options).subscribe(
+      p => {
         this.config = p;
         this.config = JSON.parse(this.config._body);
         this.checkInputs();
-      }, (error) => {
+      },
+      error => {
         this.errorHandler(error);
-      });
+      }
+    );
   }
 
   public inputChanged(item, value) {
-    const i = this.config.configuration.findIndex(function (obj) { return obj.name === item; });
+    // assign inputs to the config json depending on type of input needed
+    const i = this.config.configuration.findIndex(function(obj) {
+      return obj.name === item;
+    });
     const param = this.config.configuration[i];
-    if (param.valueType === 'date') {param.value = new Date(value).toISOString();
-    } else if (param.valueType === 'numeric') {param.value = Number(value);
-    } else if (param.valueType === 'coordinates array') { param.value = value.split(',');
-    } else { param.value = value; }
-    if (item === 'Output file Name') { this.outputName = value; }
+    if (param.valueType === 'date') {
+      param.value = new Date(value).toISOString();
+    } else if (param.valueType === 'numeric') {
+      param.value = Number(value);
+    } else if (param.valueType === 'coordinates array') {
+      param.value = value.split(',');
+    } else {
+      param.value = value;
+    }
+    if (item === 'Output file Name') {
+      this.outputName = value;
+    }
     this.checkInputs();
   }
 
   public upload(files) {
+    // add files to file list, as well as adding name of file to config.
     if (files.length > 0) {
       if (this.selectedProcedure === 'Wave') {
-        for (const file of files) { this.uploadedFiles.push(file); }
+        for (const file of files) {
+          this.uploadedFiles.push(file);
+        }
         if (files.length < 3) {
-          for (let i = 0; i < files.length; i ++) {
+          for (let i = 0; i < files.length; i++) {
             this.config.configuration[i].value = files[i].name;
             this.fileTypes.push(files[i].name.split('.').pop());
           }
@@ -99,11 +218,14 @@ export class AppComponent implements OnInit {
   }
 
   public removeFile(fileName) {
-    const index = this.uploadedFiles.findIndex(function (file) { return file.name === fileName; });
+    // remove file from file list
+    const index = this.uploadedFiles.findIndex(function(file) {
+      return file.name === fileName;
+    });
     this.uploadedFiles.splice(index, 1);
     this.fileTypes = [];
     if (this.selectedProcedure === 'Wave') {
-      for (let i = 0; i < this.uploadedFiles.length; i ++) {
+      for (let i = 0; i < this.uploadedFiles.length; i++) {
         this.config.configuration[i].value = this.uploadedFiles[i].name;
         this.fileTypes.push(this.uploadedFiles[i].name.split('.').pop());
       }
@@ -114,18 +236,26 @@ export class AppComponent implements OnInit {
   }
 
   public checkInputs() {
+    // makes sure there are no required values still missing, disables submit button if so
     this.disableSubmit = false;
     let count = 0;
     for (const val of this.config.configuration) {
-      if (val.required && val.value == null) { count++; }
+      if (val.required && val.value == null) {
+        count++;
+      }
     }
     if (count === 0) {
       this.disableSubmit = false;
-    } else { this.disableSubmit = true; }
-    if (this.uploadedFiles.length > 0) { this.checkFiles(); }
+    } else {
+      this.disableSubmit = true;
+    }
+    if (this.uploadedFiles.length > 0) {
+      this.checkFiles();
+    }
   }
 
   public checkFiles() {
+    // adds warnings if incorrect file types or number of files given
     this.fileError = '';
     if (this.selectedProcedure === 'Read' && this.fileTypes.indexOf('csv') === -1) {
       this.fileError = 'Incorrect file type, need .csv.';
@@ -145,28 +275,87 @@ export class AppComponent implements OnInit {
   }
 
   public runProc() {
-    gtag('event', 'click', {'event_category': 'procedures', 'event_label': this.selectedProcedure});
+    // posts config to procedures url
+    if (!this.config.configuration[1].value) { this.config.configuration[1].value = this.outputName; }
+    gtag('event', 'click', { event_category: 'procedures', event_label: this.selectedProcedure });
     this.showWaitCursor = true;
     const formData = new FormData();
-    for (const file of this.uploadedFiles) { formData.append('file', file); }
+    for (const file of this.uploadedFiles) {
+      formData.append('file', file);
+    }
     formData.append('configList', JSON.stringify(this.config));
-    this.http.post(this.proceduresURL + '?format=zip', formData, {responseType: ResponseContentType.Blob})
-      .subscribe(response => {
+    let opt = {}; let format = '';
+    if (this.selectedProcedure !== 'Read') {
+        opt = {responseType: ResponseContentType.Blob};
+        format = '?format=zip'; // if not running 'Read' procedure, output to zip file instead
+    }
+
+    this.http.post(this.proceduresURL + format, formData, opt).subscribe(
+      response => {
         this.showWaitCursor = false;
-        this.downLoadFile(response);
-      }, (error) => {
+        this.response = response;
+        this.selectedProcedure === 'Read' ? this.showReadChart() : this.downLoadFile();
+      },
+      error => {
         this.showWaitCursor = false;
         this.errorHandler(error);
-      });
+      }
+    );
   }
 
-  public downLoadFile(data: any) {
-    gtag('event', 'download', {'event_category': 'procedures', 'event_label': 'file download'});
-    saveAs(data._body, this.outputName);
+  public downLoadFile() {
+    // downloads zip file
+    gtag('event', 'click', {'event_category': 'download', 'event_label': 'Download zip'});
+    console.log(JSON.stringify(this.response._body));
+    saveAs(this.response._body, this.outputName);
+  }
+
+  public downloadJson() {
+      // downloads json from read procudure to json file
+      gtag('event', 'click', {'event_category': 'download', 'event_label': 'Download json (Read)'});
+      const blob = new Blob([this.response._body], {type: 'text/json'});
+      saveAs(blob, this.outputName + '.json');
+  }
+
+  public showReadChart() {
+    // outputs result of read function to chart for data preview
+    if (this.response._body.charAt(0) !== '{') {
+        this.errorHandler('Trouble reading csv file. Check for correct type.');
+        return;
+    }
+    const body = this.response._body;
+    const tableData = JSON.parse(body); // got this working, now add to scatter plot
+    while (this.chart.series && this.chart.series.length > 0) { this.chart.series[0].remove(true); }
+    if (tableData !== null) {
+        const seriesData = new Array();
+        let i = 0;
+        // limiting results to 2000, increments depending on length of data
+        const increment = Math.round(Object.keys(tableData).length / 2000);
+        for (const key in tableData) {
+            if (i % increment === 0 && seriesData.length < 2000) {
+                const date = key.split('-');
+                const newDate = Date.UTC(Number(date[0]), Number(date[1]) - 1, Number(date[2].substring(0, 2)));
+                const obj = {x: newDate, y: tableData[key]};
+                if (JSON.stringify(seriesData).indexOf(JSON.stringify(obj)) === -1) {
+                    seriesData.push(obj);
+                }
+                i ++;
+            } else if (seriesData.length < 2000) {
+                i ++;
+            } else {
+                break;
+            }
+        }
+        this.chart.addSeries({ data: seriesData});
+        this.showChart = true;
+        setTimeout(function() { window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'}); }, 100);
+    } else {
+        this.errorHandler('Error reading .csv file, please double-check your inputs.');
+    }
   }
 
   public errorHandler(error) {
-    window.alert(error);
+    this._toasterService.pop('error', 'Error', error);
   }
 }
 

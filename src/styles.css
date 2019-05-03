@@ -84,7 +84,38 @@ i {
     max-width: 200px;
 }
 
-#refreshIcon {
+.button-icon {
     margin-top: 0px !important;
 }
 
+.chart {
+    display: block;
+    margin: 0 auto;
+    width: 50%;
+    height: 310px;
+}
+
+.warningText {
+    display: block;
+    color: orange;
+    margin: 0 auto;
+    width: 50%;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.warningText i {
+    padding-right: 5px;
+}
+
+.chart-wrapper{
+    display: flex;
+    justify-content: space-between;
+    box-sizing: border-box;
+    padding: 20px 25px 10px 25px;
+    font-size: 14px;
+}
+
+.toast-close-button {
+    margin: 0 auto;
+}

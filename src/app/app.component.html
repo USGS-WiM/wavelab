@@ -1,3 +1,7 @@
+<!-- toaster directive -->
+<toaster-container [toasterconfig]="toastConfig"></toaster-container>
+<!-- / toaster directive -->
+
 <h1>WaveLab</h1>
 <h3>Choose your procedure:</h3>
 <mat-select class="procSelect" placeholder="Select" [(value)]="selectedProcedure" (selectionChange)="getConfig($event.value)">
@@ -66,5 +70,10 @@
       </tbody>
     </table>
   </div>
-  <button [disabled]="disableSubmit" (click)="runProc()"><i class="fa fa-refresh" [ngClass]="{'fa-spin': showWaitCursor}" id="refreshIcon"></i>&nbsp;&nbsp;Run Procedure</button>
+  <button [disabled]="disableSubmit" (click)="runProc()"><i class="fa fa-refresh button-icon" [ngClass]="{'fa-spin': showWaitCursor}" id="refreshIcon"></i>&nbsp;&nbsp;Run Procedure</button>
+  <button *ngIf="showChart" (click)="downloadJson()"><i class="fa fa-download button-icon"></i>&nbsp;&nbsp;Download Results</button>
 </div>
+<div class="chart-wrapper" #scrollBottom>
+    <div [class.hidden]="!showChart" class="chart" id="chart"></div>
+</div>
+<div *ngIf="showChart" class="warningText"><i class="fa fa-warning"></i>This preview only contains a fraction of the data and may not be an accurate representation.</div>

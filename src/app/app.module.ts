@@ -10,6 +10,7 @@ import { FileSelectDirective, FileUploadModule } from 'ng2-file-upload';
 import { MatFormFieldModule, MatSelectModule, MatIconModule, MatCardModule } from '@angular/material';
 import { MatListModule } from '@angular/material/list';
 import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
+import { ToasterModule, ToasterService } from 'angular2-toaster';
 
 
 @NgModule({
@@ -29,9 +30,10 @@ import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
     MatIconModule,
     MatCardModule,
     MatListModule,
-    NgMultiSelectDropDownModule.forRoot()
+    NgMultiSelectDropDownModule.forRoot(),
+    ToasterModule
   ],
-  providers: [],
+  providers: [ToasterService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

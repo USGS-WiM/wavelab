@@ -14,7 +14,7 @@ Run `ng build` to build the project. The build artifacts will be stored in the `
 
 # Wavelab
 
-Client for running read, barometric and wave scripts. Takes in files/parameters and returns a zip file.
+Client for running read, barometric and wave scripts. Takes in files/parameters and returns a zip or json file.
 
 ### Prerequisites
 ```
