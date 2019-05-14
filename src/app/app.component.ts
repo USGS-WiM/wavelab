@@ -106,7 +106,7 @@ export class AppComponent implements OnInit {
             }
           },
           tooltip: {
-            headerFormat: '<b>{point.x:%Y-%m-%d}<b><br>',
+            headerFormat: '<b>{point.x:%Y-%m-%d %H:%M:%S}<b><br>',
             pointFormat: '{point.y}',
             shared: true
           }
@@ -333,8 +333,9 @@ export class AppComponent implements OnInit {
         const increment = Math.round(Object.keys(tableData).length / 2000);
         for (const key in tableData) {
             if (i % increment === 0 && seriesData.length < 2000) {
-                const date = key.split('-');
-                const newDate = Date.UTC(Number(date[0]), Number(date[1]) - 1, Number(date[2].substring(0, 2)));
+                const date = key.split(/[:|\-|T|Z]+/);
+                const newDate = Date.UTC(Number(date[0]), Number(date[1]) - 1, Number(date[2]), Number(date[3]),
+                    Number(date[4]), Number(date[5]));
                 const obj = {x: newDate, y: tableData[key]};
                 if (JSON.stringify(seriesData).indexOf(JSON.stringify(obj)) === -1) {
                     seriesData.push(obj);
