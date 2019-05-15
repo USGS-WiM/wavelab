@@ -6,6 +6,7 @@ import 'rxjs';
 import { saveAs } from 'file-saver';
 import * as Highcharts from 'highcharts';
 import { ToasterService, ToasterConfig } from 'angular2-toaster/angular2-toaster';
+import { formatDate } from '@angular/common';
 
 declare let gtag: Function;
 
@@ -52,6 +53,7 @@ export class AppComponent implements OnInit {
     this.fileError = '';
     const JSON_HEADERS = new Headers({ Accept: 'application/json' });
     const options = new RequestOptions({ headers: JSON_HEADERS });
+    const self = this;
     this.http.get(this.proceduresURL, options).subscribe(
       // get available procedures for select
       p => {
@@ -81,7 +83,10 @@ export class AppComponent implements OnInit {
         labels: {
           formatter: function() {
             const date = new Date(this.value);
-            return date.getMonth() + '-' + date.getDate() + '-' + date.getFullYear();
+            // return date.toISOString();
+            return date.getUTCFullYear() + '-' + self.pad(date.getUTCMonth() + 1) + '-' + self.pad(date.getUTCDate()) + ' '
+                + self.pad(date.getUTCHours()) + ':' + self.pad(date.getUTCMinutes()) + ':' + self.pad(date.getUTCSeconds());
+            // return formatDate(this.value, 'MM/dd/yyyy hh:mm:ssZ', 'en-us');
           }
         },
         type: 'datetime'
@@ -357,6 +362,13 @@ export class AppComponent implements OnInit {
 
   public errorHandler(error) {
     this._toasterService.pop('error', 'Error', error);
+  }
+
+  pad(number) {
+      if (number < 10) {
+          return '0' + number;
+      }
+      return number;
   }
 }
 
