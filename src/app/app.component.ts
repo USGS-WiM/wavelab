@@ -83,10 +83,8 @@ export class AppComponent implements OnInit {
         labels: {
           formatter: function() {
             const date = new Date(this.value);
-            // return date.toISOString();
             return date.getUTCFullYear() + '-' + self.pad(date.getUTCMonth() + 1) + '-' + self.pad(date.getUTCDate()) + ' '
                 + self.pad(date.getUTCHours()) + ':' + self.pad(date.getUTCMinutes()) + ':' + self.pad(date.getUTCSeconds());
-            // return formatDate(this.value, 'MM/dd/yyyy hh:mm:ssZ', 'en-us');
           }
         },
         type: 'datetime'
@@ -189,8 +187,6 @@ export class AppComponent implements OnInit {
     const param = this.config.configuration[i];
     if (param.valueType === 'date') {
         param.value = new Date(value).toISOString();
-      // const date = new Date(value);
-      // param.value = formatDate(date, 'yyyy-MM-ddThh:mm:ss.sss', 'en-us') + 'Z';
     } else if (param.valueType === 'numeric') {
       param.value = Number(value);
     } else if (param.valueType === 'coordinates array') {
