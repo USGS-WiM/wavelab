@@ -7,7 +7,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { FileSelectDirective, FileUploadModule } from 'ng2-file-upload';
-import { MatFormFieldModule, MatSelectModule, MatIconModule, MatCardModule } from '@angular/material';
+import { MatFormFieldModule, MatSelectModule, MatIconModule, MatCardModule, MatAutocompleteModule } from '@angular/material';
 import { MatListModule } from '@angular/material/list';
 import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
 import { ToasterModule, ToasterService } from 'angular2-toaster';
@@ -31,7 +31,8 @@ import { ToasterModule, ToasterService } from 'angular2-toaster';
     MatCardModule,
     MatListModule,
     NgMultiSelectDropDownModule.forRoot(),
-    ToasterModule
+    ToasterModule,
+    MatAutocompleteModule
   ],
   providers: [ToasterService],
   bootstrap: [AppComponent]

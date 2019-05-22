@@ -170,6 +170,9 @@ export class AppComponent implements OnInit {
       p => {
         this.config = p;
         this.config = JSON.parse(this.config._body);
+        Object.keys(this.config.configuration).forEach(key => {
+            if (this.config.configuration[key].value) {delete this.config.configuration[key].value; }
+        });
         this.checkInputs();
       },
       error => {
@@ -185,7 +188,9 @@ export class AppComponent implements OnInit {
     });
     const param = this.config.configuration[i];
     if (param.valueType === 'date') {
-      param.value = new Date(value).toISOString();
+        param.value = new Date(value).toISOString();
+      // const date = new Date(value);
+      // param.value = formatDate(date, 'yyyy-MM-ddThh:mm:ss.sss', 'en-us') + 'Z';
     } else if (param.valueType === 'numeric') {
       param.value = Number(value);
     } else if (param.valueType === 'coordinates array') {
@@ -206,10 +211,10 @@ export class AppComponent implements OnInit {
         for (const file of files) {
           this.uploadedFiles.push(file);
         }
-        if (files.length < 3) {
-          for (let i = 0; i < files.length; i++) {
-            this.config.configuration[i].value = files[i].name;
-            this.fileTypes.push(files[i].name.split('.').pop());
+        if (this.uploadedFiles.length < 3) {
+          for (let i = 0; i < this.uploadedFiles.length; i++) {
+            this.config.configuration[i].value = this.uploadedFiles[i].name;
+            this.fileTypes.push(this.uploadedFiles[i].name.split('.').pop());
           }
         }
       } else {
@@ -238,6 +243,7 @@ export class AppComponent implements OnInit {
       this.uploadedFiles = [];
     }
     this.checkInputs();
+    this.checkFiles();
   }
 
   public checkInputs() {
@@ -255,8 +261,8 @@ export class AppComponent implements OnInit {
       this.disableSubmit = true;
     }
     if (this.uploadedFiles.length > 0) {
-      this.checkFiles();
-    }
+        this.checkFiles();
+      }
   }
 
   public checkFiles() {

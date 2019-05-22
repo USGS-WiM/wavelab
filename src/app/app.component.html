@@ -59,11 +59,18 @@
                 <mat-option [value]="false">false</mat-option>
                 <mat-option [value]="true">true</mat-option>
               </mat-select>
-              <mat-select *ngIf="item.valueType == 'option'" placeholder="Select" [required]="item.required" (selectionChange)="inputChanged(item.name, $event.value)">
+              <mat-select *ngIf="item.valueType == 'option' && item.name != 'Waterbody'" placeholder="Select" [required]="item.required" (selectionChange)="inputChanged(item.name, $event.value)">
                 <mat-option *ngFor="let option of item.options" [value]="option">{{option}}</mat-option>
               </mat-select>
-              <i *ngIf="item.valueType !== 'bool'" [ngClass]="item.value || !item.required ? 'fa fa-check green': 'fa fa-warning red'"></i>
-              <i *ngIf="item.valueType === 'bool'" [ngClass]="item.value !== null || !item.required ? 'fa fa-check green': 'fa fa-warning red'"></i>
+              <!--Allow write-ins for waterbody-->
+              <div *ngIf="item.name == 'Waterbody'">
+                <input type="text" matInput [(ngModel)]="item.value" [matAutocomplete]="auto" [required]="item.required">
+                <mat-autocomplete #auto="matAutocomplete">
+                  <mat-option *ngFor="let option of item.options" [value]="option">{{option}}</mat-option>
+                </mat-autocomplete>
+              </div>
+              <i *ngIf="item.valueType !== 'bool'" [ngClass]="item.value || !item.required || item.value == 0 ? 'fa fa-check green': 'fa fa-warning red'"></i>
+              <i *ngIf="item.valueType === 'bool'" [ngClass]="item.value != undefined || !item.required ? 'fa fa-check green': 'fa fa-warning red'"></i>
             </td>
           </ng-container>
         </tr>

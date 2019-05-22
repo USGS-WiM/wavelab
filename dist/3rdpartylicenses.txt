@@ -434,6 +434,8 @@ MIT
 
 @angular/material/select
 
+@angular/material/autocomplete
+
 ng-multiselect-dropdown
 MIT
 
