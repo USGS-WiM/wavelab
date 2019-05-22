@@ -262,7 +262,7 @@ export class AppComponent implements OnInit {
   }
 
   public checkFiles() {
-    // adds warnings if incorrect file types or number of files given
+    // adds warning if incorrect file types or number of files given
     this.fileError = '';
     if (this.selectedProcedure === 'Read' && this.fileTypes.indexOf('csv') === -1) {
       this.fileError = 'Incorrect file type, need .csv.';
