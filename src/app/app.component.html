@@ -53,23 +53,35 @@
             <td>{{item.required}}</td>
             <td>{{item.description}}</td>
             <td style="padding: 8px .75rem 8px 8px !important; display:flex;">
-              <input *ngIf="['option','bool'].indexOf(item.valueType) == -1 && item.name !== 'Input File Name'" [(ngModel)]="item.value" [required]="item.required" (change)="inputChanged(item.name, item.value)" 
-                validate [placeholder]="(item.valueType === 'date') ? 'Ex. ' + currentDate: (item.valueType === 'coordinates array') ? 'Ex. 43.9,-72.1': ''">
+              <!-- numeric and string inputs -->
+              <input *ngIf="['numeric','string','coordinates array'].indexOf(item.valueType) > -1 && item.name !== 'Input File Name'" [(ngModel)]="item.value" [required]="item.required" validate
+                (change)="inputChanged(item.name, item.value)" [placeholder]="item.valueType === 'coordinates array' ? 'Ex. 43.9,-72.1' : ''">
+              <!-- fixing date inputs (causing issues if you edit after in ISO string format) -->
+              <div *ngIf="item.valueType === 'date'">
+                <input [(ngModel)]="item.inputDate" [required]="item.required" validate (change)="inputChanged(item.name, item.inputDate)"
+                    [placeholder]="'Ex. ' + currentDate">
+                <br *ngIf="item.value">
+                <label *ngIf="item.value" style="font-size: 12px; padding: 10px;">{{item.value}}</label>
+              </div>
+              <!-- boolean values -->
               <mat-select *ngIf="item.valueType == 'bool'" [(value)]="item.value" placeholder="Select" [required]="item.required" (selectionChange)="inputChanged(item.name, $event.value)">
                 <mat-option [value]="false">false</mat-option>
                 <mat-option [value]="true">true</mat-option>
               </mat-select>
-              <mat-select *ngIf="item.valueType == 'option' && item.name != 'Waterbody'" placeholder="Select" [required]="item.required" (selectionChange)="inputChanged(item.name, $event.value)">
+              <!-- option values -->
+              <mat-select *ngIf="item.valueType == 'option'" placeholder="Select" [required]="item.required" (selectionChange)="inputChanged(item.name, $event.value)">
                 <mat-option *ngFor="let option of item.options" [value]="option">{{option}}</mat-option>
               </mat-select>
-              <!--Allow write-ins for waterbody-->
-              <div *ngIf="item.name == 'Waterbody'">
-                <input type="text" matInput [(ngModel)]="item.value" [matAutocomplete]="auto" [required]="item.required">
-                <mat-autocomplete #auto="matAutocomplete">
+              <!-- writein-option values -->
+              <div *ngIf="item.valueType === 'writein-option'">
+                <input type="text" matInput [(ngModel)]="item.value" [matAutocomplete]="auto" [required]="item.required" (change)="inputChanged(item.name, item.value)">
+                <mat-autocomplete #auto="matAutocomplete" (selectionChange)="inputChanged(item.name, $event.value)">
                   <mat-option *ngFor="let option of item.options" [value]="option">{{option}}</mat-option>
                 </mat-autocomplete>
               </div>
-              <i *ngIf="item.valueType !== 'bool'" [ngClass]="item.value || !item.required || item.value == 0 ? 'fa fa-check green': 'fa fa-warning red'"></i>
+              <!-- icons showing if values are valid/invalid -->
+              <i *ngIf="item.valueType !== 'bool' && item.valueType !== 'numeric'" [ngClass]="item.value || !item.required ? 'fa fa-check green': 'fa fa-warning red'"></i>
+              <i *ngIf="item.valueType === 'numeric'" [ngClass]="item.value || !item.required || (item.value == 0 && item.value !== '') ? 'fa fa-check green': 'fa fa-warning red'"></i>
               <i *ngIf="item.valueType === 'bool'" [ngClass]="item.value != undefined || !item.required ? 'fa fa-check green': 'fa fa-warning red'"></i>
             </td>
           </ng-container>

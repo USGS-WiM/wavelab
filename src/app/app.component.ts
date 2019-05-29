@@ -27,7 +27,7 @@ export class AppComponent implements OnInit {
   public acceptMultiple: boolean;
   public config;
   public disableSubmit = true;
-  public currentDate = new Date().toLocaleDateString();
+  public currentDate = formatDate(new Date(), 'M/d/yyyy h:m:s', 'en-us');
   public chart: any;
   public _chartOptions: any;
   public showChart = false;
@@ -169,7 +169,9 @@ export class AppComponent implements OnInit {
         this.config = p;
         this.config = JSON.parse(this.config._body);
         Object.keys(this.config.configuration).forEach(key => {
-            if (this.config.configuration[key].value) {delete this.config.configuration[key].value; }
+            const item = this.config.configuration[key];
+            if (item.value) {delete item.value; }
+            if (item.valueType === 'date') {item['inputDate'] = ''; }
         });
         this.checkInputs();
       },
@@ -185,15 +187,19 @@ export class AppComponent implements OnInit {
       return obj.name === item;
     });
     const param = this.config.configuration[i];
-    if (param.valueType === 'date') {
-        param.value = new Date(value).toISOString();
-    } else if (param.valueType === 'numeric') {
+    if (param.valueType === 'date' && value) {
+        const date = new Date(Date.parse(value));
+        param.value = date.getUTCFullYear() + '-' + this.pad(date.getUTCMonth() + 1) + '-' + this.pad(date.getUTCDate()) + 'T'
+                + this.pad(date.getHours()) + ':' + this.pad(date.getMinutes()) + ':' + this.pad(date.getSeconds()) + '.' +
+                (date.getMilliseconds() / 1000).toFixed(3).slice(2, 5) + 'Z';
+    } else if (param.valueType === 'numeric' && value) {
       param.value = Number(value);
     } else if (param.valueType === 'coordinates array') {
       param.value = value.split(',');
     } else {
       param.value = value;
     }
+    console.log(value); console.log(param);
     if (item === 'Output file Name') {
       this.outputName = value;
     }
@@ -283,7 +289,11 @@ export class AppComponent implements OnInit {
 
   public runProc() {
     // posts config to procedures url
-    if (!this.config.configuration[1].value) { this.config.configuration[1].value = this.outputName; }
+    if (['Read', 'Barometric'].indexOf(this.selectedProcedure) > -1 && !this.config.configuration[1].value) {
+        this.config.configuration[1].value = this.outputName;
+    } else if (this.selectedProcedure === 'Wave' && !this.config.configuration[2].value) {
+        this.config.configuration[2].value = this.outputName;
+    }
     gtag('event', 'click', { event_category: 'procedures', event_label: this.selectedProcedure });
     this.showWaitCursor = true;
     const formData = new FormData();
@@ -305,6 +315,7 @@ export class AppComponent implements OnInit {
       },
       error => {
         this.showWaitCursor = false;
+        if (this.selectedProcedure === 'Read') {this.showChart = false; }
         this.errorHandler(error);
       }
     );
@@ -328,6 +339,7 @@ export class AppComponent implements OnInit {
     // outputs result of read function to chart for data preview
     if (this.response._body.charAt(0) !== '{') {
         this.errorHandler('Trouble reading csv file. Check for correct type.');
+        this.showChart = false;
         return;
     }
     const body = this.response._body;
@@ -363,7 +375,19 @@ export class AppComponent implements OnInit {
   }
 
   public errorHandler(error) {
-    this._toasterService.pop('error', 'Error', error);
+    if (error.headers) {this.outputWimMessages(error);
+    } else { this._toasterService.pop('error', 'Error', error); }
+  }
+
+  public outputWimMessages(res) {
+    const wimMessages = JSON.parse(res.headers.get('x-usgswim-messages'));
+    if (wimMessages) {
+        for (const key of Object.keys(wimMessages)) {
+            for (const item of wimMessages[key]) {
+                if (['warning', 'error'].indexOf(key) > -1) {this._toasterService.pop(key, key.charAt(0).toUpperCase() + key.slice(1), item);}
+            }
+        }
+    }
   }
 
   pad(number) {
