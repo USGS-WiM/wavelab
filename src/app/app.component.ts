@@ -215,8 +215,13 @@ export class AppComponent implements OnInit {
         }
         if (this.uploadedFiles.length < 3) {
           for (let i = 0; i < this.uploadedFiles.length; i++) {
-            this.config.configuration[i].value = this.uploadedFiles[i].name;
-            this.fileTypes.push(this.uploadedFiles[i].name.split('.').pop());
+            const fileType = this.uploadedFiles[i].name.split('.').pop();
+            if (fileType === 'csv') {
+                this.config.configuration[1].value = this.uploadedFiles[i].name;
+            } else if (fileType === 'nc') {
+                this.config.configuration[0].value = this.uploadedFiles[i].name;
+            }
+            this.fileTypes.push(fileType);
           }
         }
       } else {
