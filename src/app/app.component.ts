@@ -19,7 +19,7 @@ export class AppComponent implements OnInit {
   public procedures;
   public selectedProcedure: string;
   public uploadedFiles = [];
-  public proceduresURL = 'https://stnpseudoprod.wim.usgs.gov/wavelabservices/procedures';
+  public proceduresURL = 'https://stntest.wim.usgs.gov/wavelabservices/procedures';
   public outputName = 'Output';
   public showWaitCursor: boolean;
   public fileError;
